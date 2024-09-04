@@ -1,8 +1,9 @@
 ThisBuild / tlBaseVersion := "0.0"
 
 ThisBuild / organization := "io.github.kory33"
+ThisBuild / organizationName := "Ryosuke Kondo"
 ThisBuild / startYear := Some(2024)
-ThisBuild / licenses := Seq(License.Apache2)
+ThisBuild / licenses := List(License.MIT)
 ThisBuild / developers := List(
   tlGitHubDev("kory33", "Ryosuke Kondo")
 )
@@ -15,7 +16,12 @@ ThisBuild / tlSitePublishBranch := Some("main")
 
 ThisBuild / scalaVersion := "3.5.0"
 
-lazy val root = tlCrossRootProject.aggregate(core)
+def withCommonSubprojectSettings(p: Project): Project = p.settings {
+  headerLicenseStyle := HeaderLicenseStyle.SpdxSyntax
+}
+
+lazy val root = tlCrossRootProject
+  .aggregate(core)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
@@ -27,7 +33,8 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
       "org.typelevel" %%% "cats-effect" % "3.5.4",
       "org.scalameta" %%% "munit" % "1.0.1" % Test,
       "org.typelevel" %%% "munit-cats-effect" % "2.0.0" % Test
-    )
+    ),
   )
+  .configure(withCommonSubprojectSettings)
 
 lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)
