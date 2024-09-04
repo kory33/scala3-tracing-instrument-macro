@@ -1,3 +1,7 @@
+import laika.ast.Path.Root
+import laika.helium.Helium
+import laika.helium.config.{HeliumIcon, IconLink}
+
 ThisBuild / tlBaseVersion := "0.0"
 
 ThisBuild / organization := "io.github.kory33"
@@ -37,4 +41,13 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
   )
   .configure(withCommonSubprojectSettings)
 
-lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)
+lazy val docs = project
+  .in(file("site"))
+  .enablePlugins(TypelevelSitePlugin)
+  .settings(
+    laikaTheme := Helium.defaults.site
+      .topNavigationBar(
+        homeLink = IconLink.internal(Root / "index.md", HeliumIcon.home),
+      )
+      .build
+  )
