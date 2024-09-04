@@ -47,7 +47,7 @@ lazy val docs = project
   .settings(
     laikaTheme := Helium.defaults.site
       .topNavigationBar(
-        homeLink = IconLink.internal(Root / "index.md", HeliumIcon.home),
+        homeLink = IconLink.internal(Root / "index.md", HeliumIcon.home)
       )
       .build
   )
