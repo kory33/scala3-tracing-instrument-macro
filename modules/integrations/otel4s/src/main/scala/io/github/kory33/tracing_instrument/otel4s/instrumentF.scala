@@ -4,7 +4,6 @@ import scala.compiletime.summonInline
 import scala.language.experimental
 import scala.annotation.{MacroAnnotation, experimental}
 import scala.quoted.*
-import org.typelevel.otel4s.trace.Tracer
 
 @experimental class instrumentF extends MacroAnnotation {
   override def transform(using Quotes)(
@@ -18,7 +17,7 @@ import org.typelevel.otel4s.trace.Tracer
         returnType match
           case Applied(fTree, List(retInnerType: TypeTree)) =>
             fTree.tpe.asType match
-              case '[type f[_] f] =>
+              case '[type f[_]; f] =>
                 retInnerType.tpe.asType match
                   case '[ret] =>
                     List(
@@ -27,10 +26,7 @@ import org.typelevel.otel4s.trace.Tracer
                         params,
                         returnType,
                         Some(
-                          newDefinition[f, ret](
-                            definingTerm.asExprOf[f[ret]],
-                            defName
-                          ).asTerm
+                          '{ encloseInSpan[f, ret](${ definingTerm.asExprOf[f[ret]] }) }.asTerm
                         )
                       )
                     )
@@ -48,15 +44,6 @@ import org.typelevel.otel4s.trace.Tracer
         report.errorAndAbort(
           "@instrument has been applied to an unsupported definition. Only method definitions are supported."
         )
-    }
-  }
-
-  private def newDefinition[F[_]: Type, RetType: Type](using Quotes)(
-      definingTerm: Expr[F[RetType]],
-      defName: String
-  ): Expr[F[RetType]] = '{
-    summonInline[Tracer[F]].span(${ Expr(defName) }).use { _ =>
-      ${ definingTerm.asExprOf[F[RetType]] }
     }
   }
 }
