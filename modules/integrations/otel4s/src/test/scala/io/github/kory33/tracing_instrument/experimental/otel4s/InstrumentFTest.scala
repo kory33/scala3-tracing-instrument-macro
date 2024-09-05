@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package io.github.kory33.tracing_instrument.otel4s
+package io.github.kory33.tracing_instrument.experimental.otel4s
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
@@ -15,10 +15,11 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.Tracer
 
+import scala.annotation.experimental
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.*
 
-class InstrumentFTest
+@experimental class InstrumentFTest
     extends AsyncFreeSpec
     with AsyncIOSpec
     with Matchers

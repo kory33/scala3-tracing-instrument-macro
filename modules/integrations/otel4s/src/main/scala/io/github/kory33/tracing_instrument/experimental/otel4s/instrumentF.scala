@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: MIT
  */
 
-package io.github.kory33.tracing_instrument.otel4s
+package io.github.kory33.tracing_instrument.experimental.otel4s
 
+import io.github.kory33.tracing_instrument.otel4s.encloseInSpan
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.annotation.MacroAnnotation
