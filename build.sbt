@@ -25,18 +25,42 @@ def withCommonSubprojectSettings(p: Project): Project = p.settings {
 }
 
 lazy val root = tlCrossRootProject
-  .aggregate(core)
+  .aggregate(core, integration_otel4s)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
-  .in(file("core"))
+  .in(file("modules") / "core")
   .settings(
-    name := "scala3-tracing-instrument-macro",
+    name := "scala3-tracing-instrument-macro-core"
+  )
+  .configure(withCommonSubprojectSettings)
+
+lazy val coreCats = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .dependsOn(core)
+  .in(file("modules") / "core-cats")
+  .settings(
+    name := "scala3-tracing-instrument-macro-cats",
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % "2.12.0",
-      "org.typelevel" %%% "cats-effect" % "3.5.4",
-      "org.scalameta" %%% "munit" % "1.0.1" % Test,
-      "org.typelevel" %%% "munit-cats-effect" % "2.0.0" % Test
+      "org.typelevel" %%% "cats-core" % "2.12.0"
+    )
+  )
+  .configure(withCommonSubprojectSettings)
+
+lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .dependsOn(core, coreCats)
+  .in(file("modules") / "integrations" / "otel4s")
+  .settings(
+    name := "scala3-tracing-instrument-macro-otel4s",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "otel4s-core" % "0.9.0",
+      "org.typelevel" %%% "otel4s-sdk-testkit" % "0.9.0" % Test,
+      "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.5.0" % Test
+    ),
+    scalacOptions ++= Seq(
+      // since the macro annotation is experimental (as of 2024/09/05)
+      "-experimental"
     )
   )
   .configure(withCommonSubprojectSettings)
