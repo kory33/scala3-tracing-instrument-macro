@@ -6,6 +6,8 @@
 
 package io.github.kory33.tracing_instrument.otel4s
 
+import org.typelevel.otel4s.trace.Tracer
+
 import scala.annotation.MacroAnnotation
 import scala.annotation.experimental
 import scala.compiletime.summonInline
@@ -40,7 +42,7 @@ import scala.quoted.*
                               ${
                                 definingTerm.asExprOf[f[ret]]
                               }
-                            )
+                            )(using summonInline[Tracer[f]])
                           }.asTerm
                         )
                       )

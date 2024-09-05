@@ -6,9 +6,10 @@
 
 package io.github.kory33.tracing_instrument.otel4s
 
-import io.github.kory33.tracing_instrument.core.cats.macros.CatsMacrosUtil
+import cats.Show.ContravariantShow
 import io.github.kory33.tracing_instrument.core.macros.MacrosUtil
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.AttributeKey
 import org.typelevel.otel4s.trace.Span
 import org.typelevel.otel4s.trace.Tracer
 
@@ -16,13 +17,50 @@ import scala.compiletime.summonInline
 import scala.quoted.*
 
 object encloseInSpan {
-  inline def apply[F[_], A](inline f: Span[F] => F[A]): F[A] = ${
-    applyImplWithKnownF[F, A]('f)
+  inline def apply[F[_], A](
+      inline f: Span[F] => F[A]
+  )(using t: Tracer[F]): F[A] = ${ applyImpl[F, A]('f, 't) }
+
+  private[otel4s] def tryToPresentAsAttributeOfType[T: Type](using
+      Quotes
+  )(parameterDef: quotes.reflect.ValDef): Option[Expr[Attribute[T]]] = {
+    import quotes.reflect.*
+
+    val attributeNameExpr = Expr(parameterDef.name)
+    for {
+      ksExpr <- Expr.summon[AttributeKey.KeySelect[T]]
+      expr <- Option.when(parameterDef.tpt.tpe <:< TypeRepr.of[T]) {
+        '{
+          Attribute(
+            ${ attributeNameExpr },
+            ${ Ref(parameterDef.symbol).asExprOf[T] }
+          )(using ${ ksExpr })
+        }
+      }
+    } yield expr
   }
 
-  def applyImplWithKnownF[F[_]: Type, A: Type](using
+  private[otel4s] def tryToPresentAsStringAttributeViaShow(using
       Quotes
-  )(f: Expr[Span[F] => F[A]]): Expr[F[A]] = {
+  )(parameterDef: quotes.reflect.ValDef): Option[Expr[Attribute[String]]] = {
+    import quotes.reflect.*
+
+    parameterDef.tpt.tpe.asType match {
+      case '[t] =>
+        Expr.summon[ContravariantShow[t]].map { instanceExpr =>
+          '{
+            Attribute[String](
+              ${ Expr(parameterDef.name) },
+              ${ instanceExpr }.show(${ Ref(parameterDef.symbol).asExprOf[t] })
+            )
+          }
+        }
+    }
+  }
+
+  def applyImpl[F[_]: Type, A: Type](using
+      Quotes
+  )(f: Expr[Span[F] => F[A]], t: Expr[Tracer[F]]): Expr[F[A]] = {
     import quotes.reflect.*
 
     val enclosingDefDef = MacrosUtil.enclosingDefDef.getOrElse {
@@ -33,33 +71,23 @@ object encloseInSpan {
 
     val spanName = enclosingDefDef.name
     val attributesExpr: Expr[Seq[Attribute[?]]] = {
-      val enclosingDefDefShowableParams =
-        CatsMacrosUtil.defDefParametersWithShowInstances(enclosingDefDef)
-
       Expr.ofSeq {
-        // TODO: parameters with primitive types (those with AttributeKey.KeySelect)
-        //       can be directly made as attributes
-        //       (since AttributeKey.KeySelect implies Show, such parameters are already
-        //        registered as attributes, but by prioritizing AttributeKey.KeySelect instances
-        //        we can provide slightly more strict attribute key type for them)
-        enclosingDefDefShowableParams.map { case (valDef, showInstance) =>
-          '{
-            Attribute[String](
-              ${ Expr(valDef.name) },
-              ${
-                (Select
-                  .unique(showInstance, "show"): Term)
-                  .appliedTo(Ref(valDef.symbol): Term)
-                  .asExprOf[String]
-              }
-            )
-          }
+        MacrosUtil.defDefValParameters(enclosingDefDef).flatMap { valDef =>
+          tryToPresentAsAttributeOfType[String](valDef)
+            .orElse(tryToPresentAsAttributeOfType[Boolean](valDef))
+            .orElse(tryToPresentAsAttributeOfType[Long](valDef))
+            .orElse(tryToPresentAsAttributeOfType[Double](valDef))
+            .orElse(tryToPresentAsAttributeOfType[Seq[String]](valDef))
+            .orElse(tryToPresentAsAttributeOfType[Seq[Boolean]](valDef))
+            .orElse(tryToPresentAsAttributeOfType[Seq[Long]](valDef))
+            .orElse(tryToPresentAsAttributeOfType[Seq[Double]](valDef))
+            .orElse(tryToPresentAsStringAttributeViaShow(valDef))
         }
       }
     }
 
     '{
-      summonInline[Tracer[F]]
+      ${ t }
         .span(
           name = ${ Expr(spanName) },
           attributes = ${ attributesExpr }*

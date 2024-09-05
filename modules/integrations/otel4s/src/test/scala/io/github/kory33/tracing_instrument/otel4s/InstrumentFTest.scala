@@ -85,23 +85,23 @@ class InstrumentFTest
     }
 
     @instrumentF
-    def emptyFunctionWithParams(a: Int, b: String)(using Tracer[IO]): IO[Unit] =
+    def emptyFunctionWithParams(l: Long, s: String, b: Boolean)(using
+        Tracer[IO]
+    ): IO[Unit] =
       IO.unit
 
     "records attributes" in {
       TracesTestkit.inMemory[IO]().use { testkit =>
         for {
           given Tracer[IO] <- testkit.tracerProvider.get("test")
-          _ <- emptyFunctionWithParams(42, "hello")
+          _ <- emptyFunctionWithParams(42, "hello", true)
           spans <- testkit.finishedSpans
         } yield {
           inside(spans) { case List(span) =>
-            println(span)
             span.attributes.elements must contain allOf (
-              // TODO: with a more sophisticated implementation, we can have 42 as an integer attribute
-              //       instead of a string attribute
-              Attribute("a", "42"),
-              Attribute("b", "hello")
+              Attribute("l", 42L),
+              Attribute("s", "hello"),
+              Attribute("b", true)
             )
           }
         }
