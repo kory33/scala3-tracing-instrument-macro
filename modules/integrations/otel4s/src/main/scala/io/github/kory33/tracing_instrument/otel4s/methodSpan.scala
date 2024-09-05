@@ -16,7 +16,7 @@ import org.typelevel.otel4s.trace.Tracer
 import scala.compiletime.summonInline
 import scala.quoted.*
 
-object encloseInSpan {
+object methodSpan {
   inline def apply[F[_], A](
       inline f: Span[F] => F[A]
   )(using t: Tracer[F]): F[A] = ${ applyImpl[F, A]('f, 't) }
