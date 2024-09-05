@@ -36,9 +36,11 @@ import scala.quoted.*
                         returnType,
                         Some(
                           '{
-                            encloseInSpan[f, ret](${
-                              definingTerm.asExprOf[f[ret]]
-                            })
+                            encloseInSpan[f, ret](_ =>
+                              ${
+                                definingTerm.asExprOf[f[ret]]
+                              }
+                            )
                           }.asTerm
                         )
                       )

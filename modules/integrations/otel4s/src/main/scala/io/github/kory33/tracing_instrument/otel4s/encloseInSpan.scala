@@ -13,15 +13,16 @@ import org.typelevel.otel4s.trace.Tracer
 
 import scala.compiletime.summonInline
 import scala.quoted.*
+import org.typelevel.otel4s.trace.Span
 
 object encloseInSpan {
-  inline def apply[F[_], A](f: F[A]): F[A] = ${
+  inline def apply[F[_], A](f: Span[F] => F[A]): F[A] = ${
     applyImplWithKnownF[F, A]('f)
   }
 
   def applyImplWithKnownF[F[_]: Type, A: Type](using
       Quotes
-  )(f: Expr[F[A]]): Expr[F[A]] = {
+  )(f: Expr[Span[F] => F[A]]): Expr[F[A]] = {
     import quotes.reflect.*
 
     val enclosingDefDef = MacrosUtil.enclosingDefDef.getOrElse {
@@ -63,7 +64,7 @@ object encloseInSpan {
           name = ${ Expr(spanName) },
           attributes = ${ attributesExpr }*
         )
-        .use(_ => $f)
+        .use($f)
     }
   }
 }
