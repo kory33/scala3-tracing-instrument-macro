@@ -1,7 +1,13 @@
+/*
+ * Copyright 2024 Ryosuke Kondo
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 package io.github.kory33.tracing_instrument.core.macros
 
-import scala.quoted.*
 import scala.annotation.tailrec
+import scala.quoted.*
 
 object MacrosUtil {
   def enclosingDefDef(using Quotes): Option[quotes.reflect.DefDef] = {

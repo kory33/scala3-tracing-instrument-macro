@@ -1,11 +1,18 @@
+/*
+ * Copyright 2024 Ryosuke Kondo
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 package io.github.kory33.tracing_instrument.otel4s
 
 import io.github.kory33.tracing_instrument.core.cats.macros.CatsMacrosUtil
 import io.github.kory33.tracing_instrument.core.macros.MacrosUtil
+import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.trace.Tracer
+
 import scala.compiletime.summonInline
 import scala.quoted.*
-import org.typelevel.otel4s.trace.Tracer
-import org.typelevel.otel4s.Attribute
 
 object encloseInSpan {
   inline def apply[F[_], A](f: F[A]): F[A] = ${

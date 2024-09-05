@@ -1,8 +1,15 @@
+/*
+ * Copyright 2024 Ryosuke Kondo
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 package io.github.kory33.tracing_instrument.otel4s
 
+import scala.annotation.MacroAnnotation
+import scala.annotation.experimental
 import scala.compiletime.summonInline
 import scala.language.experimental
-import scala.annotation.{MacroAnnotation, experimental}
 import scala.quoted.*
 
 @experimental class instrumentF extends MacroAnnotation {

@@ -1,14 +1,21 @@
+/*
+ * Copyright 2024 Ryosuke Kondo
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 package io.github.kory33.tracing_instrument.otel4s
 
-import org.scalatest.freespec.AsyncFreeSpec
-import cats.effect.testing.scalatest.AsyncIOSpec
-import org.scalatest.matchers.must.Matchers
-import org.typelevel.otel4s.trace.Tracer
 import cats.effect.IO
-import scala.concurrent.duration.*
-import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
+import cats.effect.testing.scalatest.AsyncIOSpec
 import org.scalatest.Inside
+import org.scalatest.freespec.AsyncFreeSpec
+import org.scalatest.matchers.must.Matchers
 import org.typelevel.otel4s.Attribute
+import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
+import org.typelevel.otel4s.trace.Tracer
+
+import scala.concurrent.duration.*
 
 class InstrumentFTest
     extends AsyncFreeSpec
