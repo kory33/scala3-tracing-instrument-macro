@@ -17,7 +17,9 @@ import scala.quoted.*
         returnType match
           case Applied(fTree, List(retInnerType: TypeTree)) =>
             fTree.tpe.asType match
+              // format: off
               case '[type f[_]; f] =>
+              // format: on
                 retInnerType.tpe.asType match
                   case '[ret] =>
                     List(
@@ -26,7 +28,11 @@ import scala.quoted.*
                         params,
                         returnType,
                         Some(
-                          '{ encloseInSpan[f, ret](${ definingTerm.asExprOf[f[ret]] }) }.asTerm
+                          '{
+                            encloseInSpan[f, ret](${
+                              definingTerm.asExprOf[f[ret]]
+                            })
+                          }.asTerm
                         )
                       )
                     )
