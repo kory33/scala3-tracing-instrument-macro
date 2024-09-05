@@ -16,7 +16,7 @@ import scala.quoted.*
 import org.typelevel.otel4s.trace.Span
 
 object encloseInSpan {
-  inline def apply[F[_], A](f: Span[F] => F[A]): F[A] = ${
+  inline def apply[F[_], A](inline f: Span[F] => F[A]): F[A] = ${
     applyImplWithKnownF[F, A]('f)
   }
 
