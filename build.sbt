@@ -37,7 +37,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
 
 lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
-  .dependsOn(core, coreCats)
+  .dependsOn(core)
   .in(file("modules") / "integrations" / "otel4s")
   .settings(
     name := "scala3-tracing-instrument-macro-otel4s",
