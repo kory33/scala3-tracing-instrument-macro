@@ -42,8 +42,8 @@ lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
     name := "scala3-tracing-instrument-macro-otel4s",
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "otel4s-core" % "0.9.0",
-      "org.scalameta" %%% "munit" % "1.0.1" % Test,
-      "org.typelevel" %%% "munit-cats-effect" % "2.0.0" % Test
+      "org.typelevel" %%% "otel4s-sdk-testkit" % "0.9.0" % Test,
+      "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.5.0" % Test
     ),
     scalacOptions ++= Seq(
       // since the macro annotation is experimental (as of 2024/09/05)
