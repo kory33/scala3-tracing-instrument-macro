@@ -45,10 +45,6 @@ lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
       "org.typelevel" %%% "otel4s-core" % "0.9.0",
       "org.typelevel" %%% "otel4s-sdk-testkit" % "0.9.0" % Test,
       "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.5.0" % Test
-    ),
-    scalacOptions ++= Seq(
-      // since the macro annotation is experimental (as of 2024/09/05)
-      "-experimental"
     )
   )
   .configure(withCommonSubprojectSettings)
