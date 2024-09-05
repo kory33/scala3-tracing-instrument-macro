@@ -15,6 +15,7 @@ import org.typelevel.otel4s.Attribute
 import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
 import org.typelevel.otel4s.trace.Tracer
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.*
 
 class InstrumentFTest
@@ -22,6 +23,8 @@ class InstrumentFTest
     with AsyncIOSpec
     with Matchers
     with Inside {
+  implicit override def executionContext = ExecutionContext.global
+
   "instrumentF" - {
     @instrumentF
     def sleepWithTracing(using Tracer[IO]): IO[Unit] =
