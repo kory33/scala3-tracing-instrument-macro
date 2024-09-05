@@ -8,6 +8,7 @@ import cats.effect.IO
 import scala.concurrent.duration.*
 import org.typelevel.otel4s.sdk.testkit.trace.TracesTestkit
 import org.scalatest.Inside
+import org.typelevel.otel4s.Attribute
 
 class InstrumentFTest
     extends AsyncFreeSpec
@@ -68,6 +69,30 @@ class InstrumentFTest
               span.parentSpanContext mustBe empty
               span.name mustBe "nestedSleepWithTracing"
             }
+          }
+        }
+      }
+    }
+
+    @instrumentF
+    def emptyFunctionWithParams(a: Int, b: String)(using Tracer[IO]): IO[Unit] =
+      IO.unit
+
+    "records attributes" in {
+      TracesTestkit.inMemory[IO]().use { testkit =>
+        for {
+          given Tracer[IO] <- testkit.tracerProvider.get("test")
+          _ <- emptyFunctionWithParams(42, "hello")
+          spans <- testkit.finishedSpans
+        } yield {
+          inside(spans) { case List(span) =>
+            println(span)
+            span.attributes.elements must contain allOf (
+              // TODO: with a more sophisticated implementation, we can have 42 as an integer attribute
+              //       instead of a string attribute
+              Attribute("a", "42"),
+              Attribute("b", "hello")
+            )
           }
         }
       }

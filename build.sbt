@@ -35,9 +35,21 @@ lazy val core = crossProject(JVMPlatform, JSPlatform)
   )
   .configure(withCommonSubprojectSettings)
 
-lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
+lazy val cats = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
   .dependsOn(core)
+  .in(file("modules") / "core-cats")
+  .settings(
+    name := "scala3-tracing-instrument-macro-cats",
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-core" % "2.12.0"
+    )
+  )
+  .configure(withCommonSubprojectSettings)
+
+lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
+  .crossType(CrossType.Pure)
+  .dependsOn(core, cats)
   .in(file("modules") / "integrations" / "otel4s")
   .settings(
     name := "scala3-tracing-instrument-macro-otel4s",
