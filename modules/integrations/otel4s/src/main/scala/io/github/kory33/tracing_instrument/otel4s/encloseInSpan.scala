@@ -19,9 +19,7 @@ import scala.quoted.*
 object encloseInSpan {
   inline def apply[F[_], A](
       inline f: Span[F] => F[A]
-  )(using t: Tracer[F]): F[A] = ${
-    applyImpl[F, A]('f, 't)
-  }
+  )(using t: Tracer[F]): F[A] = ${ applyImpl[F, A]('f, 't) }
 
   private[otel4s] def tryToPresentAsAttributeOfType[T: Type](using
       Quotes
