@@ -6,7 +6,7 @@
 
 package io.github.kory33.tracing_instrument.experimental.otel4s
 
-import io.github.kory33.tracing_instrument.otel4s.encloseInSpan
+import io.github.kory33.tracing_instrument.otel4s.methodSpan
 import org.typelevel.otel4s.trace.Tracer
 
 import scala.annotation.MacroAnnotation
@@ -39,7 +39,7 @@ import scala.quoted.*
                         returnType,
                         Some(
                           '{
-                            encloseInSpan[f, ret](_ =>
+                            methodSpan[f, ret](_ =>
                               ${
                                 definingTerm.asExprOf[f[ret]]
                               }
