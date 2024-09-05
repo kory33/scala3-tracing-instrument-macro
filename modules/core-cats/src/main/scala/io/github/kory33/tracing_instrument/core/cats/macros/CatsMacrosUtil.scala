@@ -2,6 +2,7 @@ package io.github.kory33.tracing_instrument.core.cats.macros
 
 import scala.quoted.*
 import cats.Show.ContravariantShow
+import io.github.kory33.tracing_instrument.core.macros.MacrosUtil
 
 object CatsMacrosUtil {
   def defDefParametersWithShowInstances(using
@@ -14,17 +15,12 @@ object CatsMacrosUtil {
   ] = {
     import quotes.reflect.*
 
-    defDef.paramss
-      .map(_.params)
-      .flatten
-      .collect { case valDef: ValDef => valDef }
-      .flatMap { valDef =>
-        val contravariantShowInstance = valDef.tpt.tpe.asType match {
-          case '[t] =>
-            Expr.summon[ContravariantShow[t]].map(_.asTerm)
-        }
-
-        contravariantShowInstance.map(valDef -> _)
+    MacrosUtil.defDefValParameters(defDef).flatMap { valDef =>
+      val contravariantShowInstance = valDef.tpt.tpe.asType match {
+        case '[t] => Expr.summon[ContravariantShow[t]].map(_.asTerm)
       }
+
+      contravariantShowInstance.map(valDef -> _)
+    }
   }
 }

@@ -30,4 +30,15 @@ object MacrosUtil {
 
     searchAscending(Symbol.spliceOwner)
   }
+
+  def defDefValParameters(using
+      Quotes
+  )(defDef: quotes.reflect.DefDef): List[quotes.reflect.ValDef] = {
+    import quotes.reflect.*
+
+    defDef.paramss
+      .map(_.params)
+      .flatten
+      .collect { case valDef: ValDef => valDef }
+  }
 }
