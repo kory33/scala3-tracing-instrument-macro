@@ -1,20 +1,26 @@
 package io.github.kory33.tracing_instrument.otel4s
 
+import io.github.kory33.tracing_instrument.core.macros.MacrosUtil
 import scala.compiletime.summonInline
 import scala.quoted.*
 import org.typelevel.otel4s.trace.Tracer
 
 object encloseInSpan {
   inline def apply[F[_], A](f: F[A]): F[A] = ${
-    applyImplWithKnownTracerF[F, A]('f)
+    applyImplWithKnownF[F, A]('f)
   }
 
-  def applyImplWithKnownTracerF[F[_]: Type, A: Type](using
+  def applyImplWithKnownF[F[_]: Type, A: Type](using
       Quotes
   )(f: Expr[F[A]]): Expr[F[A]] = {
     import quotes.reflect.*
 
-    val spanName = constructSpanNameFromAncestorsOf(Symbol.spliceOwner)
+    val spanName = MacrosUtil.enclosingDefDef.getOrElse {
+      report.errorAndAbort(
+        "Failed to find the enclosing method definition."
+      )
+    }.name
+
     '{
       summonInline[Tracer[F]]
         .span(
@@ -25,48 +31,5 @@ object encloseInSpan {
         )
         .use(_ => $f)
     }
-  }
-
-  private def constructSpanNameFromAncestorsOf(using
-      Quotes
-  )(symbol: quotes.reflect.Symbol): String = {
-    import quotes.reflect.*
-
-    val ownerAncestors = {
-      val ancestors = List.newBuilder[Symbol]
-      try {
-        var owner = symbol
-        while (true) {
-          ancestors += owner
-          owner = owner.owner
-        }
-      } catch {
-        case _: Throwable =>
-      }
-
-      ancestors
-        .result()
-        .filter(s => s.isDefDef || s.isClassDef || s.isPackageDef)
-        .filter(s => s != defn.RootPackage && s != defn.RootClass)
-    }
-
-    ownerAncestors.reverse
-      .foldLeft(
-        ("" /* accum */, Option.empty[String] /* next delimiter */ )
-      ) { (accumPair, nextAncestor) =>
-        val (accum, nextDelimiter) = accumPair
-
-        val nextDelimiterAfterThis = Some {
-          if (nextAncestor.isDefDef || nextAncestor.isPackageDef) "."
-          else if (nextAncestor.isClassDef) "#"
-          else ""
-        }
-
-        (
-          accum + nextDelimiter.getOrElse("") + nextAncestor.name,
-          nextDelimiterAfterThis
-        )
-      }
-      ._1
   }
 }

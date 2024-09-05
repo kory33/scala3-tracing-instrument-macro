@@ -15,8 +15,6 @@ class InstrumentFTest
     with Matchers
     with Inside {
   "instrumentF" - {
-    val sleepWithTracingQualifiedMethodName =
-      "io.github.kory33.tracing_instrument.otel4s.InstrumentFTest#sleepWithTracing"
     @instrumentF
     def sleepWithTracing(using Tracer[IO]): IO[Unit] =
       IO.sleep(40.millis)
@@ -29,14 +27,12 @@ class InstrumentFTest
           spans <- testkit.finishedSpans
         } yield {
           inside(spans) { case List(span) =>
-            span.name mustBe sleepWithTracingQualifiedMethodName
+            span.name mustBe "sleepWithTracing"
           }
         }
       }
     }
 
-    val nestedSleepWithTracingQualifiedMethodName =
-      "io.github.kory33.tracing_instrument.otel4s.InstrumentFTest#nestedSleepWithTracing"
     @instrumentF
     def nestedSleepWithTracing(using Tracer[IO]): IO[Unit] =
       sleepWithTracing >> sleepWithTracing
@@ -54,14 +50,24 @@ class InstrumentFTest
            *  |- sleepWithTracing (second span to be completed)
            */
           inside(spans) { case List(firstSpan, secondSpan, thirdSpan) =>
-            firstSpan.parentSpanContext.get.spanId mustBe thirdSpan.spanContext.spanId
-            firstSpan.name mustBe sleepWithTracingQualifiedMethodName
+            inside(firstSpan) { case span =>
+              span.parentSpanContext.map(_.spanId) mustBe Some(
+                thirdSpan.spanContext.spanId
+              )
+              span.name mustBe "sleepWithTracing"
+            }
 
-            secondSpan.parentSpanContext.get.spanId mustBe thirdSpan.spanContext.spanId
-            secondSpan.name mustBe sleepWithTracingQualifiedMethodName
+            inside(secondSpan) { case span =>
+              span.parentSpanContext.map(_.spanId) mustBe Some(
+                thirdSpan.spanContext.spanId
+              )
+              span.name mustBe "sleepWithTracing"
+            }
 
-            thirdSpan.parentSpanContext mustBe empty
-            thirdSpan.name mustBe nestedSleepWithTracingQualifiedMethodName
+            inside(thirdSpan) { case span =>
+              span.parentSpanContext mustBe empty
+              span.name mustBe "nestedSleepWithTracing"
+            }
           }
         }
       }
