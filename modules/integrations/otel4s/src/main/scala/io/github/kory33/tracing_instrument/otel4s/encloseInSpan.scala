@@ -17,10 +17,10 @@ import scala.compiletime.summonInline
 import scala.quoted.*
 
 object encloseInSpan {
-  inline def apply[F[_] /*: Tracer[F] (`summonInline`d) */, A](
+  inline def apply[F[_], A](
       inline f: Span[F] => F[A]
-  ): F[A] = ${
-    applyImpl[F, A]('f)
+  )(using t: Tracer[F]): F[A] = ${
+    applyImpl[F, A]('f, 't)
   }
 
   private[otel4s] def tryToPresentAsAttributeOfType[T: Type](using
@@ -62,7 +62,7 @@ object encloseInSpan {
 
   def applyImpl[F[_]: Type, A: Type](using
       Quotes
-  )(f: Expr[Span[F] => F[A]]): Expr[F[A]] = {
+  )(f: Expr[Span[F] => F[A]], t: Expr[Tracer[F]]): Expr[F[A]] = {
     import quotes.reflect.*
 
     val enclosingDefDef = MacrosUtil.enclosingDefDef.getOrElse {
@@ -89,7 +89,7 @@ object encloseInSpan {
     }
 
     '{
-      summonInline[Tracer[F]]
+      ${ t }
         .span(
           name = ${ Expr(spanName) },
           attributes = ${ attributesExpr }*
