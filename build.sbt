@@ -18,7 +18,7 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
 
-ThisBuild / scalaVersion := "3.6.1"
+ThisBuild / scalaVersion := "3.6.2"
 
 def withCommonSubprojectSettings(p: Project): Project = p.settings {
   headerLicenseStyle := HeaderLicenseStyle.SpdxSyntax
