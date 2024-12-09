@@ -44,7 +44,7 @@ lazy val integration_otel4s = crossProject(JVMPlatform, JSPlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "otel4s-core" % "0.10.0",
       "org.typelevel" %%% "otel4s-sdk-testkit" % "0.10.0" % Test,
-      "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.5.0" % Test
+      "org.typelevel" %%% "cats-effect-testing-scalatest" % "1.6.0" % Test
     )
   )
   .configure(withCommonSubprojectSettings)
