@@ -39,7 +39,7 @@ jobs:
         run: brew install sbt
 
       - name: Checkout current branch (full)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -112,7 +112,7 @@ jobs:
         run: brew install sbt
 
       - name: Checkout current branch (full)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -187,7 +187,7 @@ jobs:
         run: brew install sbt
 
       - name: Checkout current branch (full)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -223,7 +223,7 @@ jobs:
         run: brew install sbt
 
       - name: Checkout current branch (full)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
